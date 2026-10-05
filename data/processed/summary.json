@@ -1,0 +1,47 @@
+{
+  "national": {
+    "poverty_2024": 27.4,
+    "poverty_2017_modelled": 39.8,
+    "formally_served_pct": 92,
+    "financially_included_pct": 96
+  },
+  "total_population_2022": 13246394,
+  "estimated_poor_people": 3629696,
+  "default_weights": {
+    "poverty_2024": 0.35,
+    "poor_people": 0.2,
+    "not_formally_served": 0.2,
+    "unbanked": 0.1,
+    "progress_lag": 0.15
+  },
+  "correlations": {
+    "poverty_vs_not_formally_served": {
+      "spearman_rho": 0.34,
+      "p": 0.069
+    },
+    "poverty_vs_banked": {
+      "spearman_rho": -0.38,
+      "p": 0.038
+    }
+  },
+  "top5_default": [
+    "Gisagara",
+    "Rusizi",
+    "Nyanza",
+    "Nyamasheke",
+    "Nyamagabe"
+  ],
+  "robust_top5": [
+    "Gisagara",
+    "Nyanza",
+    "Nyamasheke",
+    "Nyaruguru",
+    "Ngoma"
+  ],
+  "typology_counts": {
+    "Poor and under-served": 12,
+    "Lower poverty, finance gaps": 11,
+    "Stalled progress": 4,
+    "Banked urban core": 3
+  }
+}

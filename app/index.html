@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ntawusigara</title>
+<meta name="description" content="Find the Rwandan districts where poverty and financial exclusion overlap. Kinyarwanda, English, French. Built on NISR EICV7, FinScope 2024 and Census 2022 data.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700&family=Spectral:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFFFFF; --panel:#F4F5F6; --ink:#20232B; --body:#363B45; --muted:#5D6470; --rule:#E1E4E8;
+  --c1:#F6E7C8; --c2:#EBBE7A; --c3:#D07F45; --c4:#A3402F; --c5:#62192E;
+  --teal:#0E6E6E; --t-poor:#A3402F; --t-stall:#D07F45; --t-gap:#0E6E6E; --t-core:#4A5A8C;
+  --s-bank:#20232B; --s-formal:#0E6E6E; --s-inf:#D9A441; --s-exc:#A3402F; --onink:#FFFFFF; --focus:#D07F45;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#14161B; --panel:#1D2027; --ink:#EEF0F3; --body:#CDD2DA; --muted:#9AA2AE; --rule:#2C313A;
+  --c1:#3A3326; --c2:#7A5A2E; --c3:#B66A38; --c4:#D9724F; --c5:#F2A07A;
+  --teal:#4FB3B0; --t-poor:#E07A5F; --t-stall:#E3A15C; --t-gap:#4FB3B0; --t-core:#8FA2E0;
+  --s-bank:#EEF0F3; --s-formal:#4FB3B0; --s-inf:#E3B65A; --s-exc:#E07A5F; --onink:#14161B; --focus:#E3A15C;
+}}
+:root[data-theme="dark"]{
+  --bg:#14161B; --panel:#1D2027; --ink:#EEF0F3; --body:#CDD2DA; --muted:#9AA2AE; --rule:#2C313A;
+  --c1:#3A3326; --c2:#7A5A2E; --c3:#B66A38; --c4:#D9724F; --c5:#F2A07A;
+  --teal:#4FB3B0; --t-poor:#E07A5F; --t-stall:#E3A15C; --t-gap:#4FB3B0; --t-core:#8FA2E0;
+  --s-bank:#EEF0F3; --s-formal:#4FB3B0; --s-inf:#E3B65A; --s-exc:#E07A5F; --onink:#14161B; --focus:#E3A15C;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 4rem)}
+body{margin:0;background:var(--bg);color:var(--body);font:16px/1.55 'Libre Franklin',-apple-system,'Segoe UI',Helvetica,Arial,sans-serif}
+.wrap{max-width:76rem;margin:0 auto;padding:0 1.25rem}
+h1,h2,h3{font-family:'Spectral',Georgia,'Times New Roman',serif;color:var(--ink);line-height:1.1;margin:0}
+h1{font-size:clamp(2.2rem,5vw,3.4rem)}
+h2{font-size:clamp(1.5rem,3vw,2rem)}
+h3{font-size:1.25rem}
+p{margin:0 0 .9rem;max-width:44rem}
+a{color:var(--teal)}
+button,select,input,textarea{font:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--rule)}
+.topbar .wrap{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;padding-top:.45rem;padding-bottom:.45rem}
+.brand{font-family:'Spectral',Georgia,serif;font-weight:700;color:var(--ink);font-size:1.15rem}
+.seg{display:inline-flex;border:1px solid var(--ink);border-radius:4px;overflow:hidden}
+.seg button{background:transparent;color:var(--ink);border:0;padding:.4rem .8rem;min-height:40px;cursor:pointer;font-weight:600;font-size:.92rem}
+.seg button+button{border-left:1px solid var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--onink)}
+header{padding:2.25rem 0 1.5rem;border-bottom:1px solid var(--rule)}
+.lede{font-size:1.15rem;margin-top:.8rem}
+.stats{display:flex;flex-wrap:wrap;gap:2.5rem;margin-top:1.5rem}
+.stat b{display:block;font-family:'Spectral',Georgia,serif;font-size:2rem;color:var(--ink);line-height:1}
+.stat span{font-size:.9rem;color:var(--muted)}
+main{padding:2rem 0 3rem}
+.grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(18rem,1fr);gap:2rem;align-items:start}
+@media (max-width:56rem){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);padding:1.25rem 1.4rem;border-radius:6px}
+.toolbar{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;justify-content:space-between;margin-bottom:.75rem}
+.toolbar label{font-weight:600;color:var(--ink);font-size:.95rem}
+select,textarea,input[type=text],input[type=number]{background:var(--bg);color:var(--ink);border:1px solid var(--rule);border-radius:4px;padding:.55rem .7rem;min-height:44px}
+.map svg{width:100%;height:auto;display:block}
+.map path{stroke:var(--bg);stroke-width:1.3;cursor:pointer;transition:fill .35s ease}
+.map path:hover{stroke:var(--ink);stroke-width:2}
+.map path.sel{stroke:var(--ink);stroke-width:3}
+.map path:focus{outline:none}
+.map path:focus-visible{stroke:var(--focus);stroke-width:3}
+.map text{font-size:10.5px;font-weight:600;pointer-events:none;paint-order:stroke;stroke:var(--bg);stroke-width:3px;fill:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:.4rem 1rem;align-items:center;font-size:.85rem;color:var(--muted);margin-top:.6rem}
+.legend i{display:inline-block;width:1.4rem;height:.8rem;margin-right:.35rem;vertical-align:middle;border-radius:2px}
+.rank{list-style:none;margin:0;padding:0}
+.rank li{display:grid;grid-template-columns:1.8rem minmax(0,1fr) 3rem;gap:.6rem;align-items:center;padding:.15rem 0}
+.rank button{all:unset;cursor:pointer;display:block;padding:.35rem 0;min-height:44px;box-sizing:border-box}
+.rank button:focus-visible{outline:3px solid var(--focus)}
+.rank .n{font-weight:700;color:var(--muted);text-align:right}
+.rank .nm{font-weight:600;color:var(--ink)}
+.rank .tp{font-size:.8rem;color:var(--muted)}
+.rank .bar{height:.4rem;background:var(--rule);border-radius:2px;margin-top:.25rem}
+.rank .bar i{display:block;height:100%;border-radius:2px;background:var(--c4);transition:width .4s ease}
+.rank .v{text-align:right;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.block{margin-top:2rem}
+.wgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:1rem 1.5rem;margin-top:1rem}
+.w label{display:flex;justify-content:space-between;font-weight:600;color:var(--ink);font-size:.95rem}
+.w small{display:block;color:var(--muted);font-size:.82rem;margin-top:.15rem}
+input[type=range]{width:100%;accent-color:var(--c4);min-height:44px}
+.btn{background:var(--ink);color:var(--onink);border:1px solid var(--ink);border-radius:4px;padding:.65rem 1.1rem;font-weight:600;cursor:pointer;min-height:44px}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn:disabled{opacity:.5;cursor:default}
+.btns{display:flex;gap:.6rem;flex-wrap:wrap}
+.dhead{display:flex;flex-wrap:wrap;justify-content:space-between;gap:1rem;align-items:baseline}
+.tag{display:inline-block;font-size:.85rem;font-weight:600;padding:.2rem .6rem;border-radius:999px;color:var(--onink)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(10rem,1fr));gap:1rem;margin:1.25rem 0}
+.kpi b{display:block;font-family:'Spectral',Georgia,serif;font-size:1.7rem;color:var(--ink);line-height:1.1}
+.kpi span{font-size:.85rem;color:var(--muted)}
+.strand{display:flex;height:1.6rem;border-radius:3px;overflow:hidden;margin:.5rem 0}
+.strand i{display:block;height:100%}
+.skey{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font-size:.85rem;color:var(--muted)}
+.skey i{display:inline-block;width:.8rem;height:.8rem;margin-right:.3rem;vertical-align:-1px;border-radius:2px}
+.pov{display:grid;grid-template-columns:4.5rem 1fr 3rem;gap:.5rem;align-items:center;font-size:.9rem;margin:.3rem 0}
+.pov .t{height:.9rem;background:var(--rule);border-radius:2px}
+.pov .t i{display:block;height:100%;border-radius:2px}
+.opts{margin:.5rem 0 0;padding-left:1.2rem}
+.opts li{margin-bottom:.5rem;max-width:44rem}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(18rem,1fr));gap:2rem}
+.muted{color:var(--muted);font-size:.9rem}
+.ai-out{background:var(--bg);border:1px solid var(--rule);border-radius:4px;padding:1rem 1.2rem;white-space:pre-wrap;color:var(--ink);margin-top:.8rem}
+.ai-out.err{color:var(--c4)}
+.chips{display:flex;flex-wrap:wrap;gap:.5rem;margin:.8rem 0}
+.chip{background:var(--bg);color:var(--ink);border:1px solid var(--rule);border-radius:999px;padding:.45rem .9rem;min-height:44px;cursor:pointer;text-align:left}
+.chip:hover{border-color:var(--ink)}
+.askrow{display:flex;gap:.5rem;flex-wrap:wrap}
+.askrow input{flex:1 1 16rem}
+.thread{display:flex;flex-direction:column;gap:.4rem}
+.q{font-weight:700;color:var(--ink);margin-top:.8rem}
+.method{border-top:1px solid var(--rule);padding:2.5rem 0}
+.method h3{margin:1.5rem 0 .5rem;font-size:1.15rem}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{text-align:left;padding:.45rem .6rem;border-bottom:1px solid var(--rule)}
+th{color:var(--ink)}
+.scroll{overflow-x:auto}
+footer{border-top:1px solid var(--rule);padding:1.5rem 0 2.5rem;font-size:.88rem;color:var(--muted)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.rank .lk{display:block;font-size:.78rem;color:var(--muted)}
+.frow{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem 1.5rem;margin:1rem 0}
+.frow label{display:block;font-weight:600;color:var(--ink);font-size:.92rem;margin-bottom:.3rem}
+.frow input,.frow select{width:100%}
+.note{background:var(--bg);border-left:4px solid var(--c3);padding:.7rem 1rem;margin:.8rem 0;font-size:.92rem;color:var(--ink)}
+.note.demo{border-left-color:var(--c4)}
+.filebtn{position:relative;overflow:hidden;display:inline-flex;align-items:center}
+.filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer}
+td.up{color:var(--teal);font-weight:600} td.down{color:var(--c4);font-weight:600}
+#report{display:none}
+@media print{
+  @page{size:A4;margin:14mm}
+  body>*:not(#report){display:none!important}
+  #report{display:block;color:#000;font-size:10.5pt;line-height:1.45}
+  #report h1{font-size:20pt;margin:0 0 2pt} #report h2{font-size:12pt;margin:10pt 0 3pt}
+  #report .rp-sub{color:#444;margin:0 0 8pt} #report .rp-kpis{display:flex;gap:16pt;margin:6pt 0 4pt}
+  #report .rp-kpis b{display:block;font-size:15pt;font-family:Georgia,serif} #report .rp-kpis span{font-size:8.5pt;color:#444}
+  #report .rp-strand{display:flex;height:9pt;margin:4pt 0} #report .rp-strand i{display:block;height:100%;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #report .rp-body{white-space:pre-wrap} #report .rp-foot{border-top:1px solid #999;margin-top:10pt;padding-top:4pt;font-size:8pt;color:#444}
+}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="wrap">
+  <span class="brand">Ntawusigara</span>
+  <div class="seg" role="group" aria-label="Ururimi / Language / Langue">
+    <button type="button" data-lang="rw" lang="rw" aria-pressed="false">Kinyarwanda</button>
+    <button type="button" data-lang="en" lang="en" aria-pressed="true">English</button>
+    <button type="button" data-lang="fr" lang="fr" aria-pressed="false">Français</button>
+  </div>
+</div></div>
+
+<header><div class="wrap">
+  <h1>Ntawusigara</h1>
+  <p class="lede" data-i="lede"></p>
+  <div class="stats" id="stats"></div>
+</div></header>
+
+<main class="wrap">
+  <div class="grid">
+    <section aria-labelledby="mapH">
+      <div class="toolbar">
+        <h2 id="mapH" data-i="mapH"></h2>
+        <div><label for="colorBy" data-i="colorBy"></label>
+        <select id="colorBy"></select></div>
+      </div>
+      <div class="map"><svg id="map" role="group"></svg></div>
+      <div class="legend" id="legend"></div>
+    </section>
+    <section class="card" aria-labelledby="rankH">
+      <h2 id="rankH" data-i="rankH"></h2>
+      <p class="muted" style="margin:.4rem 0 .8rem" data-i="rankP"></p>
+      <ol class="rank" id="rank"></ol>
+      <p class="muted" style="margin-top:.6rem" data-i="rankU"></p>
+    </section>
+  </div>
+
+  <section class="block card" aria-labelledby="wH">
+    <div class="toolbar"><h2 id="wH" data-i="wH"></h2>
+      <div class="btns"><button class="btn ghost" id="reset" type="button" data-i="reset"></button><button class="btn" id="dl" type="button" data-i="dl"></button></div></div>
+    <p style="margin:0" data-i="wP"></p>
+    <div class="wgrid" id="wgrid"></div>
+    <p id="robustNote" style="margin:1.2rem 0 0;font-size:.92rem"></p>
+  </section>
+
+  <section class="block card" id="detail" aria-live="polite"></section>
+
+  <section class="block card" id="alSec" aria-labelledby="alH">
+    <div class="toolbar"><h2 id="alH" data-i="alH"></h2><button class="btn ghost" type="button" id="alDl" data-i="alDl"></button></div>
+    <p data-i="alP"></p>
+    <div class="frow">
+      <div><label for="alPeople" data-i="alPeople"></label><input type="number" id="alPeople" min="0" step="1000" value="50000"></div>
+      <div><label for="alCost" data-i="alCost"></label><input type="number" id="alCost" min="0" step="1000" placeholder="0"></div>
+      <div><label for="alMethod" data-i="alMethod"></label><select id="alMethod"><option value="top"></option><option value="all"></option></select></div>
+      <div id="alNbox"><label for="alN" id="alNl"></label><input type="range" id="alN" min="1" max="30" value="10"></div>
+    </div>
+    <p id="alSum" style="font-weight:600;color:var(--ink)"></p>
+    <div class="scroll"><table id="alTable"></table></div>
+    <p class="muted" style="margin-top:.8rem" data-i="alNote"></p>
+  </section>
+
+  <section class="block card" id="aiSec" aria-labelledby="aiH">
+    <h2 id="aiH" data-i="aiH"></h2>
+    <p style="margin-top:.5rem" data-i="aiP"></p>
+    <div class="chips" id="chips"></div>
+    <form class="askrow" id="askForm">
+      <label for="askIn" class="sr" data-i="askL"></label>
+      <input id="askIn" type="text" maxlength="500" autocomplete="off">
+      <button class="btn" type="submit" id="askBtn" data-i="ask"></button>
+      <button class="btn ghost" type="button" id="stopBtn" hidden data-i="stop"></button>
+    </form>
+    <div class="thread" id="thread" aria-live="polite"></div>
+    <p class="muted" style="margin-top:1rem" id="aiNote" data-i="aiDisc"></p>
+  </section>
+  <section class="block card" id="cmpSec" aria-labelledby="cmpH">
+    <h2 id="cmpH" data-i="cmpH"></h2>
+    <p style="margin-top:.5rem" data-i="cmpP"></p>
+    <div class="btns">
+      <button class="btn ghost" type="button" id="cmpTpl" data-i="cmpTpl"></button>
+      <label class="btn filebtn"><span data-i="cmpUp"></span><input type="file" id="cmpFile" accept=".csv,text/csv"></label>
+      <button class="btn ghost" type="button" id="cmpDemo" data-i="cmpDemo"></button>
+    </div>
+    <div id="cmpOut" aria-live="polite"></div>
+  </section>
+</main>
+
+<section class="method"><div class="wrap">
+  <h2 data-i="mH"></h2>
+  <div class="cols">
+    <div>
+      <h3 data-i="m1h"></h3><p data-i="m1"></p>
+      <h3 data-i="m2h"></h3><p data-i="m2"></p>
+      <h3 data-i="m3h"></h3><p data-i="m3"></p>
+    </div>
+    <div>
+      <h3 data-i="m4h"></h3><p data-i="m4"></p>
+      <h3 data-i="m5h"></h3><p data-i="m5"></p>
+      <h3 data-i="m6h"></h3><p data-i="m6"></p>
+      <h3 data-i="m7h"></h3><p data-i="m7"></p>
+    </div>
+  </div>
+  <h3 data-i="tableH"></h3>
+  <div class="scroll"><table id="table"></table></div>
+</div></section>
+
+<footer><div class="wrap" data-i="foot"></div></footer>
+<div id="report" aria-hidden="true"></div>
+
+<script src="data.js"></script>
+<script src="ntw-tools.js"></script>
+<script src="ai-model.js"></script>
+<script src="ai-local.js"></script>
+<script>
+(function(){
+var D = window.NTW_DATA, rows = D.districts, S = D.summary, IND = D.indicators;
+var W = Object.assign({}, S.default_weights), sel = null, colorBy = 'priority_index', lang = 'en';
+var TYP = ['Poor and under-served','Stalled progress','Lower poverty, finance gaps','Banked urban core'];
+var TCOL = {'Poor and under-served':'var(--t-poor)','Stalled progress':'var(--t-stall)','Lower poverty, finance gaps':'var(--t-gap)','Banked urban core':'var(--t-core)'};
+var SCALE = ['var(--c1)','var(--c2)','var(--c3)','var(--c4)','var(--c5)'];
+var COLOR_KEYS = ['priority_index','poverty_2024','poor_people','not_formally_served','banked','poverty_drop_pp','typology'];
+
+var T = {
+en:{
+  lede:"Find the districts where poverty and financial exclusion overlap, so programmes reach the people they are meant for. Built on NISR's EICV7 poverty survey, the FinScope 2024 financial inclusion survey and the 2022 Census.",
+  st1:'people below the poverty line (estimate)', st2:'poverty rate, 2024', st3:'of adults formally served by finance', st4:'districts that rank top 5 under most weightings',
+  mapH:'District map', colorBy:'Colour districts by ', mapAria:"Map of Rwanda's 30 districts",
+  cb:{priority_index:'Priority index',poverty_2024:'Poverty rate 2024',poor_people:'Number of poor people',not_formally_served:'Adults not formally served',banked:'Adults with a bank account',poverty_drop_pp:'Poverty fall since 2017',typology:'District typology'},
+  lower:'Lower', higher:'Higher', fifths:'(fifths of districts)',
+  rankH:'Priority ranking', rankP:'Higher score means a stronger case for combined poverty and financial inclusion support. Select a district for details.',
+  wH:'Set your priorities', reset:'Reset to default weights', dl:'Download ranking (CSV)',
+  wP:'Each slider sets how much an indicator counts in the priority index. Weights are rescaled to add up to 100%. The ranking and map update as you move them.',
+  ind:{poverty_2024:'Poverty rate',poor_people:'Number of poor people',not_formally_served:'Not formally served',unbanked:'Unbanked',progress_lag:'Slow poverty reduction'},
+  hint:{poverty_2024:'Share of people below the poverty line (EICV7)',poor_people:'Poverty rate times 2022 population',not_formally_served:'Adults using only informal finance or none (FinScope)',unbanked:'Adults without a bank account (FinScope)',progress_lag:'Smaller poverty fall since 2017 counts more'},
+  robust:'Robust priorities, in the top 5 under at least half of 10,000 random weightings: ',
+  typ:{'Poor and under-served':'Poor and under-served','Stalled progress':'Stalled progress','Lower poverty, finance gaps':'Lower poverty, finance gaps','Banked urban core':'Banked urban core'},
+  typNote:{'Poor and under-served':'High poverty and many adults outside formal finance','Stalled progress':'Poverty fell far less since 2017 than in the rest of the country','Lower poverty, finance gaps':'Below-average poverty, but pockets of informal-only or excluded adults','Banked urban core':'Low poverty, bank-led inclusion'},
+  prov:{'City of Kigali':'City of Kigali',Southern:'Southern Province',Western:'Western Province',Northern:'Northern Province',Eastern:'Eastern Province'},
+  dH:'District details', dPick:'Select a district on the map or in the ranking to see its profile and options to consider.',
+  rankOf:'rank {r} of 30', k1:'priority score (0 to 100)', k2:'people below the poverty line', k3:'residents, 2022 Census', k4:'of weightings place it in the top 5',
+  povH:'Poverty rate', rwanda:'Rwanda', povNote:"* 2017 is NISR's modelled estimate under the EICV7 method. Fall since 2017: {n} points.",
+  finH:'How adults access finance', s1:'Banked', s2:'Other formal only', s3:'Informal only', s4:'Excluded', finNote:'"Other formal only" is mostly mobile money and Umurenge SACCOs. Source: FinScope 2024.',
+  optH:'Options to consider', optNote:'These are prompts for discussion, drawn from the data and FinScope 2024 recommendations, not tested programme evaluations.',
+  o1:'Poverty fell only {n} points since 2017, against 12.4 nationally. Ask why before scaling existing programmes, and make this district a focus of the next EICV round.',
+  o2:'{n}% of adults use only informal finance or none. FinScope 2024 recommends products that mimic savings groups; linking local ibimina and VSLAs to SACCO or mobile wallets is a natural route.',
+  o3:'{n}% of adults are fully excluded. Not owning a phone is the main barrier to mobile money (62% of non-users nationally), so phone access and agent coverage come first.',
+  o4:'Only {n}% of adults are banked while poverty is high. Low-cost credit and microinsurance through District SACCOs and agents address the collateral barrier that FinScope reports for 19% of non-borrowers.',
+  o5:'{n} people live below the poverty line here, among the largest numbers in the country. Scale matters as much as rate when planning coverage.',
+  o6:'Bank-led inclusion and a low poverty rate. The {n} poor residents are easy to overlook in district averages, so target at sector or cell level.',
+  o7:'No single indicator stands out. Maintain current programmes and monitor the next EICV and FinScope rounds.',
+  briefBtn:'Write a briefing note', briefH:'Briefing note',
+  aiH:'Ask the data', aiP:'Ask a question in Kinyarwanda, English or French. A small AI model built into this page answers from the district figures in this tool only. It runs on your device: no internet, no API.',
+  askL:'Your question', ask:'Ask', stop:'Stop', ph:'e.g. Which districts have the most poor people?', thinking:'Thinking…',
+  qs:['Which districts have the most poor people?','Where did poverty fall least since 2017?','Compare Nyamagabe and Nyaruguru on financial access.'],
+  aiDisc:'Answers are computed on your device from the figures in this tool, and nothing is sent anywhere. The model can misread a question, so check the NISR reports before using answers in decisions.',
+  aiOff:'The AI assistant is not available in this copy. It works in the hosted version, or when an AI endpoint is configured (see README).',
+  aiDenied:'The AI assistant is turned off for this view.', aiBusy:'Too many requests at once. Wait a moment and try again.', aiFail:'The answer was interrupted. Try again.', aiRefused:'The assistant could not answer that. Try a question about poverty or finance in the districts.',
+  likely:'likely rank {lo}–{hi}',
+  k5:'likely rank range (90% of simulations)',
+  rankU:'Ranks are estimates. "Likely" shows where a district lands in 90% of 1,000 simulations of survey sampling error.',
+  alH:'Plan coverage',
+  alP:'How many people can your programme reach? The tool shares them across districts in proportion to the number of poor people, never more than a district\'s poor population.',
+  alPeople:'People to reach',
+  alCost:'Cost per person, RWF (optional)',
+  alMethod:'How to share',
+  alTop:'Top priority districts, by number of poor people',
+  alAll:'All 30 districts, weighted by priority score × poor people',
+  alN:'Number of priority districts: {n}',
+  alDl:'Download allocation (CSV)',
+  alSum:'{placed} people across {d} districts{cost}.',
+  alCostTxt:', total cost {c} RWF',
+  alUnplaced:'{n} people could not be placed: the selected districts have fewer poor people than that. Include more districts.',
+  alNote:'A starting point for discussion, not a decision. It uses district averages; final targeting should use sector and household data (for example Ubudehe and the social registry).',
+  printBtn:'Print one-page report',
+  rpTitle:'District brief',
+  rpGen:'Generated with Ntawusigara on {d}. Figures: NISR EICV7, FinScope 2024, Census 2022.',
+  cmpH:'What changed? Compare a new survey round',
+  cmpP:'When NISR publishes the next EICV or FinScope, enter the new district figures here. The tool shows which changes are larger than sampling error, and how the priority ranking moves. Nothing is uploaded: the file is read on your device.',
+  cmpTpl:'Download template (current figures)',
+  cmpUp:'Load new round (CSV)',
+  cmpDemo:'Try a simulated demo',
+  cmpDemoNote:'DEMO: a simulated re-survey with the same true values and only new sampling noise. Not real data. Notice that the top 5 can change from noise alone, while no change in poverty is flagged as larger than sampling error.',
+  cmpSum:'{m} districts matched.',
+  cmpFell:'Poverty fell by more than sampling error in: {l}.',
+  cmpRose:'Poverty rose by more than sampling error in: {l}.',
+  cmpNone:'No change in poverty is larger than sampling error.',
+  cmpIn:'Entered the top 5: {l}.',
+  cmpOut:'Left the top 5: {l}.',
+  cmpBank:'Bank use rose by more than sampling error in: {l}.',
+  cmpUnknown:'Not recognised: {l}.',
+  cmpBad:'No district names in this file matched. Use the template columns.',
+  cmpStar:'* larger than sampling error (95% level). Ranks use your current weights.',
+  m7h:'Rank uncertainty',
+  m7:'District figures are survey estimates. The tool re-draws every district\'s poverty rates and finance shares 1,000 times within their sampling error (an effective sample of 250 per district, allowing for cluster sampling of about 400 to 500 households or adults) and recomputes the ranking each time with your weights. The "likely" range covers 90% of these simulations. Replace this assumption with NISR\'s published standard errors when available (columns poverty_2024_se and finscope_n in the raw files).',
+  alTh:['District','Rank','People reached','Share of its poor','Cost (RWF)'],
+  cmpTh:['District','Poverty %','Change','Banked %','Change','Rank','New rank'],
+  mH:'How it works',
+  m1h:'The priority index', m1:'Five indicators are rescaled from 0 (lowest district) to 1 (highest) and combined with the weights above: poverty rate; number of poor people (poverty rate times 2022 population); share of adults not formally served (informal only or excluded); share of adults without a bank account; and slow poverty reduction since 2017.',
+  m2h:'Robustness', m2:"Weights are a judgement call, so the tool tests 10,000 random weight sets. A district's robustness is the share of those sets in which it ranks in the top five. Districts above 50% are a priority almost whatever weights you choose.",
+  m3h:'Typologies and AI', m3:'K-means clustering groups districts by poverty rate, share not formally served, share banked and poverty fall since 2017. The assistant is a small model trained by the team (Naive Bayes on character n-grams, in three languages) that recognises the type of question; the answer and briefing notes are then computed from this tool\'s table, so figures cannot be invented. A household-level poverty model is prepared for EICV7 microdata (see the repository).',
+  m4h:'Limits to keep in mind', m4:'District estimates come from samples of about 400 to 500 households or adults, so differences of a few points may not be meaningful. The 2017 poverty rates are NISR model estimates. FinScope covers adults aged 16 and over, while poverty rates cover all individuals. FinScope district values were read from the published chart (Figure 13).',
+  m5h:'Why no district-level prediction model', m5:'We tested three models predicting district poverty from finance and census indicators. With only 30 districts, ridge regression and random forests did no better than the national average in leave-one-out tests; gradient boosting did somewhat better (R² 0.25), but that is too fragile to rank districts on. Prediction belongs at household level, so the household model waits for EICV7 microdata.',
+  m6h:'Sources', m6:'NISR, EICV7 Poverty Profile 2023/24, Annex B. Access to Finance Rwanda and NISR, FinScope Rwanda 2024, Figure 13. NISR, Fifth Population and Housing Census 2022.',
+  tableH:'Full data', th:['#','District','Score','Likely rank (90%)','Poverty %','Poor people','Banked %','Not formally served %','Fall since 2017 (pts)','Top-5 robustness %','Typology'],
+  foot:'Ntawusigara means "no one is left behind". A prototype for the NISR 2026 Big Data Hackathon, Track 2: Financial Inclusion and Poverty Reduction. Data under NISR\'s Creative Commons Attribution 4.0 licence.'
+},
+rw:{
+  lede:"Menya uturere ubukene n'ubuke bwa serivisi z'imari bihuriramo, kugira ngo gahunda zigere ku bo zigenewe. Byubakiye ku bushakashatsi bwa NISR: EICV7 ku bukene, FinScope 2024 kuri serivisi z'imari, n'Ibarura rusange rya 2022.",
+  st1:"abantu bari munsi y'umurongo w'ubukene (igereranya)", st2:"igipimo cy'ubukene, 2024", st3:"by'abakuru bakoresha serivisi z'imari zemewe", st4:"uturere tuza mu 5 ba mbere hafi buri gihe",
+  mapH:"Ikarita y'uturere", colorBy:'Garagaza uturere hakurikijwe ', mapAria:"Ikarita y'uturere 30 tw'u Rwanda",
+  cb:{priority_index:"Igipimo cy'ibyihutirwa",poverty_2024:"Igipimo cy'ubukene 2024",poor_people:'Umubare w\'abakene',not_formally_served:'Abakuru badakoresha serivisi zemewe',banked:'Abakuru bafite konti muri banki',poverty_drop_pp:"Igabanuka ry'ubukene kuva 2017",typology:"Ubwoko bw'akarere"},
+  lower:'Gito', higher:'Kinini', fifths:"(ibice bitanu by'uturere)",
+  rankH:"Urutonde rw'ibyihutirwa", rankP:"Amanota menshi asobanura ko akarere gakeneye cyane gufashwa ku bukene no kuri serivisi z'imari. Hitamo akarere urebe ibisobanuro.",
+  wH:'Shyiraho ibyo uha agaciro', reset:'Subiza uko byari bimeze', dl:'Kuramo urutonde (CSV)',
+  wP:"Buri gipimo kigaragaza uburemere buri kimenyetso gifite mu gipimo cy'ibyihutirwa. Uburemere buhindurwa bugateranwa bukagera ku 100%. Urutonde n'ikarita bihinduka uko ubyimura.",
+  ind:{poverty_2024:"Igipimo cy'ubukene",poor_people:"Umubare w'abakene",not_formally_served:'Badakoresha serivisi zemewe',unbanked:'Badafite konti ya banki',progress_lag:"Igabanuka rito ry'ubukene"},
+  hint:{poverty_2024:"Abari munsi y'umurongo w'ubukene (EICV7)",poor_people:"Igipimo cy'ubukene × abaturage 2022",not_formally_served:"Abakoresha imari itemewe gusa cyangwa ntacyo (FinScope)",unbanked:"Abakuru badafite konti ya banki (FinScope)",progress_lag:"Igabanuka rito kuva 2017 rihabwa uburemere"},
+  robust:"Ibyihutirwa bihamye, biza mu 5 ba mbere nibura muri kimwe cya kabiri cy'ibipimo 10,000 by'impanuka: ",
+  typ:{'Poor and under-served':'Ubukene bwinshi, serivisi nke','Stalled progress':'Iterambere ryadindiye','Lower poverty, finance gaps':"Ubukene buke, icyuho mu mari",'Banked urban core':'Umujyi ukoresha banki'},
+  typNote:{'Poor and under-served':"Ubukene bwinshi n'abakuru benshi badakoresha serivisi z'imari zemewe",'Stalled progress':"Ubukene bwagabanutse cyane munsi y'ahandi kuva 2017",'Lower poverty, finance gaps':"Ubukene buri munsi y'impuzandengo, ariko hari abakoresha imari itemewe gusa cyangwa ntacyo",'Banked urban core':"Ubukene buke, serivisi z'imari zishingiye kuri banki"},
+  prov:{'City of Kigali':'Umujyi wa Kigali',Southern:"Intara y'Amajyepfo",Western:"Intara y'Iburengerazuba",Northern:"Intara y'Amajyaruguru",Eastern:"Intara y'Iburasirazuba"},
+  dH:"Ibisobanuro by'akarere", dPick:"Hitamo akarere ku ikarita cyangwa ku rutonde urebe imiterere yako n'ibyakorwa.",
+  rankOf:'ku mwanya wa {r} muri 30', k1:"amanota y'ibyihutirwa (0 kugeza 100)", k2:"abantu bari munsi y'umurongo w'ubukene", k3:'abaturage, Ibarura 2022', k4:"by'ibipimo bigashyira mu 5 ba mbere",
+  povH:"Igipimo cy'ubukene", rwanda:'U Rwanda', povNote:"* 2017 ni igereranya rya NISR hakoreshejwe uburyo bwa EICV7. Igabanuka kuva 2017: amanota {n}.",
+  finH:"Uko abakuru bagera kuri serivisi z'imari", s1:'Bafite banki', s2:'Izindi zemewe gusa', s3:'Izitemewe gusa', s4:'Ntacyo bakoresha', finNote:"\"Izindi zemewe gusa\" ni cyane cyane mobile money na Umurenge SACCO. Inkomoko: FinScope 2024.",
+  optH:'Ibyakwitabwaho', optNote:"Ibi ni ibitekerezo byo kuganiraho, bishingiye ku makuru n'inama za FinScope 2024, si gahunda zagenzuwe.",
+  o1:"Ubukene bwagabanutseho amanota {n} gusa kuva 2017, mu gihe mu gihugu ari 12,4. Banza umenye impamvu mbere yo kwagura gahunda zisanzwe, kandi aka karere kitabweho mu cyiciro gikurikira cya EICV.",
+  o2:"{n}% by'abakuru bakoresha imari itemewe gusa cyangwa ntacyo. FinScope 2024 irasaba serivisi zisa n'amatsinda yo kuzigama; guhuza ibimina na VSLA na SACCO cyangwa mobile money ni inzira nziza.",
+  o3:"{n}% by'abakuru ntibakoresha serivisi z'imari na zimwe. Kutagira telefoni ni yo nzitizi nyamukuru kuri mobile money (62% by'abatayikoresha mu gihugu), bityo telefoni n'abakozi ba serivisi biza imbere.",
+  o4:"{n}% gusa by'abakuru bafite banki mu gihe ubukene buri hejuru. Inguzanyo zihendutse n'ubwishingizi buciriritse binyuze muri D-SACCO bikemura inzitizi y'ingwate FinScope ivuga ku 19% by'abatagurije.",
+  o5:"Abantu {n} bari munsi y'umurongo w'ubukene hano, umwe mu mibare minini mu gihugu. Umubare ufite agaciro nk'igipimo mu gutegura gahunda.",
+  o6:"Serivisi z'imari zishingiye kuri banki n'ubukene buke. Abakene {n} baho bashobora kwibagirana mu mpuzandengo y'akarere, bityo mubashake ku rwego rw'umurenge cyangwa akagari.",
+  o7:"Nta kimenyetso na kimwe kigaragara cyane. Mukomeze gahunda zisanzwe kandi mukurikirane EICV na FinScope bizakurikiraho.",
+  briefBtn:"Andika incamake", briefH:'Incamake y\'akarere',
+  aiH:'Baza amakuru', aiP:"Baza ikibazo mu Kinyarwanda, Icyongereza cyangwa Igifaransa. Porogaramu ntoya y'ubwenge buhangano (AI) iri muri uru rupapuro isubiza ishingiye gusa ku mibare y'uturere iri muri iki gikoresho. Ikorera kuri telefone cyangwa mudasobwa yawe: nta murandasi, nta API.",
+  askL:'Ikibazo cyawe', ask:'Baza', stop:'Hagarara', ph:"urugero: Ni utuhe turere dufite abakene benshi?", thinking:'Biratekerezwaho…',
+  qs:['Ni utuhe turere dufite abakene benshi?',"Ni hehe ubukene bwagabanutse gake kuva 2017?","Gereranya Nyamagabe na Nyaruguru kuri serivisi z'imari."],
+  aiDisc:"Ibisubizo bibarirwa kuri telefone cyangwa mudasobwa yawe hashingiwe ku mibare iri muri iki gikoresho, kandi nta makuru yoherezwa ahandi. Porogaramu ishobora kumva nabi ikibazo, bityo reba raporo za NISR mbere yo kubifatiraho ibyemezo.",
+  aiOff:"Umufasha wa AI ntaboneka muri iyi kopi. Akora kuri verisiyo yo kuri murandasi, cyangwa iyo hashyizweho aho AI ihurira (reba README).",
+  aiDenied:'Umufasha wa AI yahagaritswe hano.', aiBusy:'Ibisabwa ni byinshi icyarimwe. Tegereza gato wongere ugerageze.', aiFail:'Igisubizo cyahagaze. Ongera ugerageze.', aiRefused:"Umufasha ntiyashoboye gusubiza. Baza ku bukene cyangwa serivisi z'imari mu turere.",
+  likely:'birashoboka ku mwanya wa {lo}–{hi}',
+  k5:'imyanya ishoboka (90% by\'igeragezwa)',
+  rankU:'Imyanya ni igereranya. "Birashoboka" yerekana aho akarere kaza muri 90% by\'igeragezwa 1 000 ry\'amakosa y\'icyitegererezo cy\'ubushakashatsi.',
+  alH:'Gutegura abazagerwaho',
+  alP:'Gahunda yanyu ishobora kugera ku bantu bangahe? Igikoresho kibagabanya mu turere hakurikijwe umubare w\'abakene, nta karere gahabwa abarenze abakene bako.',
+  alPeople:'Abantu bazagerwaho',
+  alCost:'Ikiguzi kuri buri muntu, RWF (si ngombwa)',
+  alMethod:'Uko bagabanywa',
+  alTop:'Uturere tw\'ibanze, hakurikijwe umubare w\'abakene',
+  alAll:'Uturere twose 30, hakurikijwe amanota y\'ibyihutirwa × abakene',
+  alN:'Umubare w\'uturere tw\'ibanze: {n}',
+  alDl:'Kuramo igabanya (CSV)',
+  alSum:'Abantu {placed} mu turere {d}{cost}.',
+  alCostTxt:', ikiguzi cyose ni RWF {c}',
+  alUnplaced:'Abantu {n} ntibabonewe umwanya: uturere twatoranyijwe dufite abakene bake kurusha uwo mubare. Ongeramo utundi turere.',
+  alNote:'Ni intangiriro y\'ibiganiro, si icyemezo. Ishingiye ku mpuzandengo z\'uturere; igenamigambi rya nyuma rikwiye gukoresha amakuru y\'imirenge n\'ingo (urugero Ubudehe n\'irangamimerere ry\'imibereho).',
+  printBtn:'Sohora raporo y\'urupapuro rumwe',
+  rpTitle:'Incamake y\'akarere',
+  rpGen:'Byakozwe na Ntawusigara ku wa {d}. Imibare: NISR EICV7, FinScope 2024, Ibarura 2022.',
+  cmpH:'Ni iki cyahindutse? Gereranya icyiciro gishya cy\'ubushakashatsi',
+  cmpP:'NISR nisohora EICV cyangwa FinScope ikurikira, shyiramo imibare mishya y\'uturere hano. Igikoresho kigaragaza impinduka zirenze amakosa y\'icyitegererezo, n\'uko urutonde rw\'ibyihutirwa ruhinduka. Nta kintu cyoherezwa: dosiye isomerwa ku gikoresho cyawe.',
+  cmpTpl:'Kuramo urugero (imibare iriho)',
+  cmpUp:'Fungura icyiciro gishya (CSV)',
+  cmpDemo:'Gerageza urugero rw\'igeragezwa',
+  cmpDemoNote:'URUGERO: ubushakashatsi bwigana bufite agaciro nyako kamwe n\'amakosa mashya y\'icyitegererezo gusa. Si amakuru nyakuri. Reba uko uturere 5 twa mbere dushobora guhinduka kubera amakosa gusa, nyamara nta mpinduka y\'ubukene igaragazwa nk\'irenze amakosa y\'icyitegererezo.',
+  cmpSum:'Uturere {m} twabonetse.',
+  cmpFell:'Ubukene bwagabanutse kurenza amakosa y\'icyitegererezo muri: {l}.',
+  cmpRose:'Ubukene bwiyongereye kurenza amakosa y\'icyitegererezo muri: {l}.',
+  cmpNone:'Nta mpinduka y\'ubukene irenze amakosa y\'icyitegererezo.',
+  cmpIn:'Twinjiye mu 5 twa mbere: {l}.',
+  cmpOut:'Twavuye mu 5 twa mbere: {l}.',
+  cmpBank:'Gukoresha banki byiyongereye kurenza amakosa y\'icyitegererezo muri: {l}.',
+  cmpUnknown:'Ntibimenyekanye: {l}.',
+  cmpBad:'Nta zina ry\'akarere muri iyi dosiye ryabonetse. Koresha inkingi z\'urugero.',
+  cmpStar:'* birenze amakosa y\'icyitegererezo (ku rugero rwa 95%). Imyanya ikoresha uburemere bwawe buriho.',
+  m7h:'Gushidikanya ku myanya',
+  m7:'Imibare y\'uturere ni igereranya ry\'ubushakashatsi. Igikoresho cyongera gutoranya inshuro 1 000 ibipimo by\'ubukene n\'ibya serivisi z\'imari bya buri karere mu rugero rw\'amakosa y\'icyitegererezo (icyitegererezo gifatika cya 250 kuri buri karere, hitawe ku buryo ingo cyangwa abakuru 400 kugeza 500 batoranywa mu matsinda), kigasubiramo urutonde buri nshuro hakurikijwe uburemere bwawe. Imyanya "ishoboka" ihuriza 90% by\'iryo geragezwa. Simbuza iki gitekerezo amakosa asanzwe yatangajwe na NISR igihe ahari (inkingi poverty_2024_se na finscope_n mu madosiye y\'ibanze).',
+  alTh:['Akarere','Umwanya','Abazagerwaho','Ijanisha ry\'abakene baho','Ikiguzi (RWF)'],
+  cmpTh:['Akarere','Ubukene %','Impinduka','Banki %','Impinduka','Umwanya','Umwanya mushya'],
+  mH:'Uko gikora',
+  m1h:"Igipimo cy'ibyihutirwa", m1:"Ibimenyetso bitanu bihindurwa kuva kuri 0 (akarere kari hasi) kugeza kuri 1 (kari hejuru), bigahuzwa hakurikijwe uburemere buri haruguru: igipimo cy'ubukene; umubare w'abakene (igipimo × abaturage 2022); abakuru badakoresha serivisi zemewe; abakuru badafite konti ya banki; n'igabanuka rito ry'ubukene kuva 2017.",
+  m2h:'Ugushikama', m2:"Uburemere ni icyemezo cy'umuntu, bityo igikoresho kigerageza ibipimo 10,000 by'impanuka. Ugushikama kw'akarere ni ijanisha ry'ibyo bipimo bigashyira mu 5 ba mbere. Uturere turenga 50% twihutirwa uko waba uhisemo kose.",
+  m3h:"Ubwoko bw'uturere na AI", m3:"K-means ihuza uturere hakurikijwe ubukene, abadakoresha serivisi zemewe, abafite banki n'igabanuka ry'ubukene kuva 2017. Umufasha ni porogaramu ntoya yatojwe n'itsinda (Naive Bayes ku nyuguti, mu ndimi eshatu) imenya ubwoko bw'ikibazo; igisubizo n'incamake bibarwa ku mbonerahamwe y'iki gikoresho, bityo nta mibare ihimbwa. Moderi y'ubukene ku rwego rw'urugo yateguwe ku makuru y'ibanze ya EICV7 (reba repository).",
+  m4h:"Imbibi z'ibi bipimo", m4:"Imibare y'uturere ikomoka ku ngero z'ingo cyangwa abakuru 400 kugeza 500, bityo itandukaniro rito rishobora kutagira icyo risobanura. Ibipimo by'ubukene bya 2017 ni igereranya rya NISR. FinScope ireba abakuru bafite imyaka 16 kuzamura, mu gihe ubukene bureba abantu bose. Imibare ya FinScope y'uturere yasomwe ku gishushanyo cyatangajwe (Figure 13).",
+  m5h:"Impamvu nta moderi yo guteganya ku rwego rw'akarere", m5:"Twagerageje moderi eshatu zo guteganya ubukene bw'akarere hashingiwe ku mibare y'imari n'ibarura. Ku turere 30 gusa, ridge na random forest ntizarushije impuzandengo y'igihugu; gradient boosting yarushijeho gato (R² 0,25), ariko ntibihagije ngo ishingirweho mu gutondeka uturere. Iteganya rikwiye gukorwa ku rwego rw'urugo, ari yo mpamvu moderi y'ingo itegereje amakuru y'ibanze ya EICV7.",
+  m6h:'Inkomoko', m6:"NISR, EICV7 Poverty Profile 2023/24, Annex B. Access to Finance Rwanda na NISR, FinScope Rwanda 2024, Figure 13. NISR, Ibarura Rusange rya Gatanu ry'Abaturage n'Imiturire 2022.",
+  tableH:'Amakuru yose', th:['#','Akarere','Amanota','Imyanya ishoboka','Ubukene %','Abakene','Banki %','Badakoresha zemewe %','Igabanuka kuva 2017','Ugushikama %','Ubwoko'],
+  foot:"Ntawusigara bisobanura ko \"nta n'umwe usigara inyuma\". Igerageza ry'Irushanwa rya NISR Big Data Hackathon 2026, Track 2: Serivisi z'imari kuri bose no kurwanya ubukene. Amakuru ari munsi y'uruhushya rwa NISR Creative Commons Attribution 4.0."
+},
+fr:{
+  lede:"Repérez les districts où la pauvreté et l'exclusion financière se superposent, pour que les programmes atteignent ceux à qui ils sont destinés. Fondé sur l'enquête EICV7 du NISR, l'enquête FinScope 2024 sur l'inclusion financière et le recensement de 2022.",
+  st1:'personnes sous le seuil de pauvreté (estimation)', st2:'taux de pauvreté, 2024', st3:'des adultes servis par le secteur financier formel', st4:'districts dans le top 5 pour la plupart des pondérations',
+  mapH:'Carte des districts', colorBy:'Colorer les districts selon ', mapAria:'Carte des 30 districts du Rwanda',
+  cb:{priority_index:'Indice de priorité',poverty_2024:'Taux de pauvreté 2024',poor_people:'Nombre de personnes pauvres',not_formally_served:'Adultes hors finance formelle',banked:'Adultes avec un compte bancaire',poverty_drop_pp:'Baisse de la pauvreté depuis 2017',typology:'Typologie des districts'},
+  lower:'Plus faible', higher:'Plus élevé', fifths:'(quintiles de districts)',
+  rankH:'Classement des priorités', rankP:"Un score élevé signale un besoin plus fort d'appui conjoint contre la pauvreté et pour l'inclusion financière. Sélectionnez un district pour le détail.",
+  wH:'Définissez vos priorités', reset:'Rétablir les poids par défaut', dl:'Télécharger le classement (CSV)',
+  wP:"Chaque curseur fixe le poids d'un indicateur dans l'indice. Les poids sont ramenés à 100 %. Le classement et la carte se mettent à jour en direct.",
+  ind:{poverty_2024:'Taux de pauvreté',poor_people:'Nombre de pauvres',not_formally_served:'Hors finance formelle',unbanked:'Non bancarisés',progress_lag:'Recul lent de la pauvreté'},
+  hint:{poverty_2024:'Part de la population sous le seuil de pauvreté (EICV7)',poor_people:'Taux de pauvreté × population 2022',not_formally_served:'Adultes utilisant seulement l\'informel, ou rien (FinScope)',unbanked:'Adultes sans compte bancaire (FinScope)',progress_lag:'Une baisse plus faible depuis 2017 compte davantage'},
+  robust:'Priorités robustes, dans le top 5 pour au moins la moitié de 10 000 pondérations aléatoires : ',
+  typ:{'Poor and under-served':'Pauvres et mal desservis','Stalled progress':'Progrès au point mort','Lower poverty, finance gaps':'Pauvreté moindre, lacunes financières','Banked urban core':'Cœur urbain bancarisé'},
+  typNote:{'Poor and under-served':'Forte pauvreté et nombreux adultes hors finance formelle','Stalled progress':'La pauvreté a bien moins reculé depuis 2017 que dans le reste du pays','Lower poverty, finance gaps':"Pauvreté inférieure à la moyenne, mais des poches d'adultes hors finance formelle",'Banked urban core':'Faible pauvreté, inclusion portée par les banques'},
+  prov:{'City of Kigali':'Ville de Kigali',Southern:'Province du Sud',Western:"Province de l'Ouest",Northern:'Province du Nord',Eastern:"Province de l'Est"},
+  dH:'Détail du district', dPick:'Sélectionnez un district sur la carte ou dans le classement pour voir son profil et des pistes.',
+  rankOf:'rang {r} sur 30', k1:'score de priorité (0 à 100)', k2:'personnes sous le seuil de pauvreté', k3:'habitants, recensement 2022', k4:'des pondérations le placent dans le top 5',
+  povH:'Taux de pauvreté', rwanda:'Rwanda', povNote:'* 2017 est une estimation modélisée du NISR selon la méthode EICV7. Baisse depuis 2017 : {n} points.',
+  finH:'Accès des adultes aux services financiers', s1:'Bancarisés', s2:'Autres formels seulement', s3:'Informel seulement', s4:'Exclus', finNote:'« Autres formels seulement » : surtout mobile money et Umurenge SACCO. Source : FinScope 2024.',
+  optH:'Pistes à considérer', optNote:'Pistes de discussion tirées des données et des recommandations de FinScope 2024, pas des évaluations de programmes.',
+  o1:"La pauvreté n'a reculé que de {n} points depuis 2017, contre 12,4 au niveau national. Comprendre pourquoi avant d'étendre les programmes, et faire de ce district une priorité de la prochaine EICV.",
+  o2:"{n} % des adultes n'utilisent que l'informel, ou rien. FinScope 2024 recommande des produits inspirés des groupes d'épargne ; relier les ibimina et VSLA aux SACCO ou au mobile money est une voie naturelle.",
+  o3:"{n} % des adultes sont totalement exclus. Ne pas avoir de téléphone est le premier frein au mobile money (62 % des non-utilisateurs), donc l'accès au téléphone et aux agents passe en premier.",
+  o4:"Seuls {n} % des adultes sont bancarisés alors que la pauvreté est forte. Crédit à bas coût et micro-assurance via les D-SACCO et les agents répondent au manque de garanties cité par 19 % des non-emprunteurs.",
+  o5:"{n} personnes vivent sous le seuil de pauvreté ici, l'un des nombres les plus élevés du pays. L'échelle compte autant que le taux pour planifier la couverture.",
+  o6:"Inclusion portée par les banques et faible pauvreté. Les {n} habitants pauvres disparaissent facilement dans les moyennes du district : ciblez au niveau du secteur ou de la cellule.",
+  o7:"Aucun indicateur ne se distingue. Maintenir les programmes actuels et suivre les prochaines EICV et FinScope.",
+  briefBtn:'Rédiger une note de synthèse', briefH:'Note de synthèse',
+  aiH:'Interrogez les données', aiP:"Posez une question en kinyarwanda, en anglais ou en français. Un petit modèle d'IA intégré à cette page répond uniquement à partir des chiffres de districts de cet outil. Il fonctionne sur votre appareil : sans internet, sans API.",
+  askL:'Votre question', ask:'Demander', stop:'Arrêter', ph:'ex. Quels districts comptent le plus de pauvres ?', thinking:'Réflexion…',
+  qs:['Quels districts comptent le plus de pauvres ?',"Où la pauvreté a-t-elle le moins reculé depuis 2017 ?","Comparez Nyamagabe et Nyaruguru sur l'accès financier."],
+  aiDisc:"Les réponses sont calculées sur votre appareil à partir des chiffres de cet outil, et rien n'est envoyé. Le modèle peut mal comprendre une question : vérifiez les rapports du NISR avant toute décision.",
+  aiOff:"L'assistant d'IA n'est pas disponible dans cette copie. Il fonctionne dans la version hébergée, ou si un point d'accès IA est configuré (voir README).",
+  aiDenied:"L'assistant d'IA est désactivé ici.", aiBusy:'Trop de demandes à la fois. Patientez puis réessayez.', aiFail:'La réponse a été interrompue. Réessayez.', aiRefused:"L'assistant n'a pas pu répondre. Posez une question sur la pauvreté ou la finance dans les districts.",
+  likely:'rang probable {lo}–{hi}',
+  k5:'rang probable (90 % des simulations)',
+  rankU:'Les rangs sont des estimations. « Probable » indique la fourchette obtenue dans 90 % de 1 000 simulations de l\'erreur d\'échantillonnage.',
+  alH:'Planifier la couverture',
+  alP:'Combien de personnes votre programme peut-il atteindre ? L\'outil les répartit entre districts selon le nombre de pauvres, sans jamais dépasser la population pauvre d\'un district.',
+  alPeople:'Personnes à atteindre',
+  alCost:'Coût par personne, RWF (facultatif)',
+  alMethod:'Mode de répartition',
+  alTop:'Districts prioritaires, selon le nombre de pauvres',
+  alAll:'Les 30 districts, pondérés par score de priorité × pauvres',
+  alN:'Nombre de districts prioritaires : {n}',
+  alDl:'Télécharger la répartition (CSV)',
+  alSum:'{placed} personnes dans {d} districts{cost}.',
+  alCostTxt:', coût total {c} RWF',
+  alUnplaced:'{n} personnes n\'ont pas pu être réparties : les districts choisis comptent moins de pauvres. Incluez plus de districts.',
+  alNote:'Point de départ pour la discussion, pas une décision. L\'outil utilise des moyennes de district ; le ciblage final doit s\'appuyer sur les données des secteurs et des ménages (par exemple Ubudehe et le registre social).',
+  printBtn:'Imprimer un rapport d\'une page',
+  rpTitle:'Fiche district',
+  rpGen:'Généré avec Ntawusigara le {d}. Données : NISR EICV7, FinScope 2024, Recensement 2022.',
+  cmpH:'Qu\'est-ce qui a changé ? Comparer une nouvelle enquête',
+  cmpP:'Quand le NISR publiera la prochaine EICV ou FinScope, saisissez ici les nouveaux chiffres des districts. L\'outil montre quels changements dépassent l\'erreur d\'échantillonnage et comment le classement évolue. Rien n\'est envoyé : le fichier est lu sur votre appareil.',
+  cmpTpl:'Télécharger le modèle (chiffres actuels)',
+  cmpUp:'Charger une nouvelle enquête (CSV)',
+  cmpDemo:'Essayer une démo simulée',
+  cmpDemoNote:'DÉMO : nouvelle enquête simulée avec les mêmes valeurs réelles et seulement un nouveau bruit d\'échantillonnage. Données fictives. Le top 5 peut changer sous l\'effet du seul bruit, alors qu\'aucun changement de pauvreté ne dépasse l\'erreur d\'échantillonnage.',
+  cmpSum:'{m} districts reconnus.',
+  cmpFell:'La pauvreté a baissé au-delà de l\'erreur d\'échantillonnage à : {l}.',
+  cmpRose:'La pauvreté a augmenté au-delà de l\'erreur d\'échantillonnage à : {l}.',
+  cmpNone:'Aucun changement de pauvreté ne dépasse l\'erreur d\'échantillonnage.',
+  cmpIn:'Entrés dans le top 5 : {l}.',
+  cmpOut:'Sortis du top 5 : {l}.',
+  cmpBank:'La bancarisation a augmenté au-delà de l\'erreur d\'échantillonnage à : {l}.',
+  cmpUnknown:'Non reconnus : {l}.',
+  cmpBad:'Aucun nom de district du fichier n\'a été reconnu. Utilisez les colonnes du modèle.',
+  cmpStar:'* au-delà de l\'erreur d\'échantillonnage (seuil de 95 %). Les rangs utilisent vos poids actuels.',
+  m7h:'Incertitude des rangs',
+  m7:'Les chiffres de district sont des estimations d\'enquête. L\'outil retire 1 000 fois les taux de pauvreté et les parts financières de chaque district dans leur marge d\'erreur (échantillon effectif de 250 par district, compte tenu d\'un échantillonnage en grappes d\'environ 400 à 500 ménages ou adultes) et recalcule le classement à chaque fois avec vos poids. La fourchette « probable » couvre 90 % de ces simulations. Remplacez cette hypothèse par les erreurs types publiées par le NISR si disponibles (colonnes poverty_2024_se et finscope_n des fichiers bruts).',
+  alTh:['District','Rang','Personnes atteintes','Part de ses pauvres','Coût (RWF)'],
+  cmpTh:['District','Pauvreté %','Écart','Bancarisés %','Écart','Rang','Nouveau rang'],
+  mH:'Méthode',
+  m1h:"L'indice de priorité", m1:"Cinq indicateurs sont ramenés de 0 (district le plus bas) à 1 (le plus haut) puis combinés avec les poids ci-dessus : taux de pauvreté ; nombre de pauvres (taux × population 2022) ; adultes hors finance formelle ; adultes sans compte bancaire ; recul lent de la pauvreté depuis 2017.",
+  m2h:'Robustesse', m2:"Les poids relèvent d'un jugement : l'outil teste donc 10 000 jeux de poids aléatoires. La robustesse d'un district est la part de ces jeux où il est dans le top 5. Au-delà de 50 %, il est prioritaire presque quels que soient les poids.",
+  m3h:'Typologies et IA', m3:"Un k-means regroupe les districts selon la pauvreté, l'exclusion du formel, la bancarisation et la baisse de la pauvreté depuis 2017. L'assistant est un petit modèle entraîné par l'équipe (Naive Bayes sur n-grammes de caractères, en trois langues) qui reconnaît le type de question ; la réponse et les notes sont ensuite calculées à partir du tableau de l'outil, sans chiffres inventés. Un modèle de pauvreté au niveau des ménages est prêt pour les microdonnées EICV7 (voir le dépôt).",
+  m4h:'Limites', m4:"Les estimations par district reposent sur des échantillons de 400 à 500 ménages ou adultes : de petits écarts peuvent ne pas être significatifs. Les taux de 2017 sont modélisés par le NISR. FinScope couvre les adultes de 16 ans et plus, la pauvreté toute la population. Les valeurs FinScope par district ont été lues sur le graphique publié (figure 13).",
+  m5h:'Pourquoi pas de modèle prédictif par district', m5:"Nous avons testé trois modèles prédisant la pauvreté des districts à partir des indicateurs financiers et du recensement. Avec 30 districts seulement, la régression ridge et la forêt aléatoire n'ont pas fait mieux que la moyenne nationale en validation croisée ; le gradient boosting a fait un peu mieux (R² 0,25), mais c'est trop fragile pour classer les districts. La prédiction relève du niveau ménage : le modèle ménage attend les microdonnées EICV7.",
+  m6h:'Sources', m6:"NISR, EICV7 Poverty Profile 2023/24, annexe B. Access to Finance Rwanda et NISR, FinScope Rwanda 2024, figure 13. NISR, cinquième recensement général de la population et de l'habitat 2022.",
+  tableH:'Données complètes', th:['#','District','Score','Rang probable','Pauvreté %','Pauvres','Bancarisés %','Hors formel %','Baisse depuis 2017 (pts)','Robustesse top 5 %','Typologie'],
+  foot:"Ntawusigara signifie « personne n'est laissé de côté ». Prototype pour le NISR Big Data Hackathon 2026, piste 2 : inclusion financière et réduction de la pauvreté. Données sous licence Creative Commons Attribution 4.0 du NISR."
+}};
+
+function t(k,v){var s=(T[lang][k]!=null?T[lang][k]:T.en[k]);if(typeof s==='string'&&v)Object.keys(v).forEach(function(x){s=s.split('{'+x+'}').join(v[x]);});return s;}
+var loc=function(){return lang==='en'?'en-US':'fr-FR';};
+var fmt=function(n){return Math.round(n).toLocaleString(loc());};
+var dec=function(n,d){return Number(n).toLocaleString(loc(),{minimumFractionDigits:d||0,maximumFractionDigits:d==null?1:d});};
+var pc=function(n){return dec(n)+(lang==='fr'?' %':'%');};
+var $=function(id){return document.getElementById(id);};
+function el(tg,c,txt){var e=document.createElement(tg);if(c)e.className=c;if(txt!=null)e.textContent=txt;return e;}
+var by={};rows.forEach(function(r){by[r.district]=r;});
+
+function compute(){
+  var tot=IND.reduce(function(a,i){return a+W[i.key];},0)||1;
+  rows.forEach(function(r){r.score=IND.reduce(function(a,i){return a+r['n_'+i.key]*W[i.key];},0)/tot*100;});
+  var s=rows.slice().sort(function(a,b){return b.score-a.score;});s.forEach(function(r,i){r.rank=i+1;});return s;
+}
+
+// Map
+var NS='http://www.w3.org/2000/svg',svg=$('map'),paths={};
+svg.setAttribute('viewBox','0 0 '+D.shapes.w+' '+D.shapes.h);
+Object.keys(D.shapes.d).forEach(function(n){var p=document.createElementNS(NS,'path');p.setAttribute('d',D.shapes.d[n].d);p.setAttribute('tabindex','0');p.setAttribute('role','button');
+  p.addEventListener('click',function(){pick(n);});p.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();pick(n);}});svg.appendChild(p);paths[n]=p;});
+Object.keys(D.shapes.d).forEach(function(n){if(n==='Nyarugenge'||n==='Kicukiro')return;var tx=document.createElementNS(NS,'text');tx.setAttribute('x',D.shapes.d[n].cx);tx.setAttribute('y',D.shapes.d[n].cy);tx.setAttribute('text-anchor','middle');tx.textContent=n;svg.appendChild(tx);});
+function breaks(key){var v=rows.map(function(r){return key==='priority_index'?r.score:r[key];}).sort(function(a,b){return a-b;});return [0.2,0.4,0.6,0.8].map(function(q){return v[Math.floor(q*(v.length-1))];});}
+function drawMap(){
+  var lg=$('legend');lg.textContent='';
+  if(colorBy==='typology'){rows.forEach(function(r){paths[r.district].style.fill=TCOL[r.typology];});
+    TYP.forEach(function(k){var s=el('span');var i=el('i');i.style.background=TCOL[k];s.appendChild(i);s.appendChild(document.createTextNode(t('typ')[k]));lg.appendChild(s);});}
+  else{var br=breaks(colorBy),inv=colorBy==='banked'||colorBy==='poverty_drop_pp';
+    rows.forEach(function(r){var v=colorBy==='priority_index'?r.score:r[colorBy],c=0;br.forEach(function(b){if(v>b)c++;});paths[r.district].style.fill=SCALE[inv?4-c:c];});
+    lg.appendChild(el('span',null,inv?t('higher'):t('lower')));SCALE.forEach(function(c){var i=el('i');i.style.background=c;lg.appendChild(i);});
+    lg.appendChild(el('span',null,(inv?t('lower'):t('higher'))+' '+t('fifths')));}
+  Object.keys(paths).forEach(function(n){var r=by[n];paths[n].classList.toggle('sel',sel===n);paths[n].setAttribute('aria-label',n+', '+t('rankOf',{r:r.rank})+', '+dec(r.score));});
+}
+var DRAWS=window.NtwTools?NtwTools.makeDraws(rows):null,RANGES={};
+function computeRanges(){if(DRAWS)RANGES=NtwTools.rankRanges(rows,DRAWS,W);}
+function likely(r){var x=RANGES[r.district];return x?(x.lo===x.hi?String(x.lo):x.lo+'–'+x.hi):'';}
+function drawRank(s){var ol=$('rank');ol.textContent='';s.slice(0,12).forEach(function(r){var li=el('li');li.appendChild(el('span','n',r.rank));
+  var b=el('button');b.type='button';b.addEventListener('click',function(){pick(r.district);});b.appendChild(el('span','nm',r.district));b.appendChild(el('span','tp','  '+t('typ')[r.typology]));
+  var x=RANGES[r.district];if(x)b.appendChild(el('span','lk',t('likely',{lo:x.lo,hi:x.hi})));
+  var bar=el('div','bar');var bi=el('i');bi.style.width=r.score.toFixed(1)+'%';bar.appendChild(bi);b.appendChild(bar);li.appendChild(b);li.appendChild(el('span','v',r.score.toFixed(0)));ol.appendChild(li);});}
+
+// Weights
+IND.forEach(function(i){var d=el('div','w');var l=el('label');l.setAttribute('for','w_'+i.key);l.appendChild(el('span',null,''));var o=el('output');o.id='o_'+i.key;l.appendChild(o);
+  var inp=el('input');inp.type='range';inp.min='0';inp.max='100';inp.step='5';inp.id='w_'+i.key;inp.addEventListener('input',function(){W[i.key]=parseInt(inp.value,10)/100;update();});
+  var sm=el('small');d.appendChild(l);d.appendChild(inp);d.appendChild(sm);d.dataset.key=i.key;$('wgrid').appendChild(d);});
+function drawWeights(){var tot=IND.reduce(function(a,i){return a+W[i.key];},0)||1;[].forEach.call($('wgrid').children,function(d){var k=d.dataset.key;d.querySelector('label span').textContent=t('ind')[k];d.querySelector('small').textContent=t('hint')[k];
+  $('w_'+k).value=Math.round(W[k]*100);$('o_'+k).textContent=pc(Math.round(W[k]/tot*100));});}
+$('reset').addEventListener('click',function(){W=Object.assign({},S.default_weights);update();});
+
+function options(r){var o=[];
+  if(r.poverty_drop_pp<7)o.push(t('o1',{n:dec(r.poverty_drop_pp)}));
+  if(r.not_formally_served>=12)o.push(t('o2',{n:r.not_formally_served}));
+  if(r.excluded>=6)o.push(t('o3',{n:r.excluded}));
+  if(r.banked<=12&&r.poverty_2024>=30)o.push(t('o4',{n:r.banked}));
+  if(r.poor_people>=150000)o.push(t('o5',{n:fmt(r.poor_people)}));
+  if(r.banked>=40)o.push(t('o6',{n:fmt(r.poor_people)}));
+  if(!o.length)o.push(t('o7'));return o.slice(0,3);}
+
+function pick(n){sel=n;briefState=null;drawMap();drawDetail();$('detail').scrollIntoView({behavior:window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});}
+var briefState=null;
+function drawDetail(){var box=$('detail');box.textContent='';
+  if(!sel){box.appendChild(el('h2',null,t('dH')));box.appendChild(el('p',null,t('dPick')));return;}
+  var r=by[sel],h=el('div','dhead');h.appendChild(el('h2',null,r.district));var sub=el('div');var tag=el('span','tag',t('typ')[r.typology]);tag.style.background=TCOL[r.typology];sub.appendChild(tag);
+  sub.appendChild(document.createTextNode('  '+t('prov')[r.province]+', '+t('rankOf',{r:r.rank})));h.appendChild(sub);box.appendChild(h);box.appendChild(el('p','muted',t('typNote')[r.typology]));
+  var k=el('div','kpis');[[r.score.toFixed(0),t('k1')],[fmt(r.poor_people),t('k2')],[fmt(r.population_2022),t('k3')],[pc(r.top5_robustness_pct),t('k4')]].concat(RANGES[r.district]?[[likely(r),t('k5')]]:[]).forEach(function(x){var d=el('div','kpi');d.appendChild(el('b',null,x[0]));d.appendChild(el('span',null,x[1]));k.appendChild(d);});box.appendChild(k);
+  var cols=el('div','cols'),c1=el('div');c1.appendChild(el('h3',null,t('povH')));
+  [['2017*',r.poverty_2017_modelled,'var(--c3)'],['2024',r.poverty_2024,'var(--c5)'],[t('rwanda'),27.4,'var(--muted)']].forEach(function(x){var p=el('div','pov');p.appendChild(el('span',null,x[0]));var tt=el('div','t');var i=el('i');i.style.width=(x[1]/70*100)+'%';i.style.background=x[2];tt.appendChild(i);p.appendChild(tt);p.appendChild(el('b',null,pc(x[1])));c1.appendChild(p);});
+  c1.appendChild(el('p','muted',t('povNote',{n:dec(r.poverty_drop_pp)})));
+  var c2=el('div');c2.appendChild(el('h3',null,t('finH')));var st=el('div','strand');st.setAttribute('role','img');
+  var parts=[['banked','s1','var(--s-bank)'],['other_formal_only','s2','var(--s-formal)'],['informal_only','s3','var(--s-inf)'],['excluded','s4','var(--s-exc)']];
+  st.setAttribute('aria-label',parts.map(function(x){return t(x[1])+' '+pc(r[x[0]]);}).join(', '));parts.forEach(function(x){var i=el('i');i.style.width=r[x[0]]+'%';i.style.background=x[2];st.appendChild(i);});c2.appendChild(st);
+  var sk=el('div','skey');parts.forEach(function(x){var s=el('span');var i=el('i');i.style.background=x[2];s.appendChild(i);s.appendChild(document.createTextNode(t(x[1])+' '+pc(r[x[0]])));sk.appendChild(s);});c2.appendChild(sk);c2.appendChild(el('p','muted',t('finNote')));
+  cols.appendChild(c1);cols.appendChild(c2);box.appendChild(cols);
+  box.appendChild(el('h3',null,t('optH')));var ul=el('ul','opts');options(r).forEach(function(x){ul.appendChild(el('li',null,x));});box.appendChild(ul);box.appendChild(el('p','muted',t('optNote')));
+  var bb=el('button','btn',t('briefBtn'));bb.type='button';bb.id='briefBtn';bb.disabled=!aiReady||aiBusy;bb.addEventListener('click',function(){runBrief(r.district);});box.appendChild(bb);
+  var out=el('div','ai-out');out.id='briefOut';out.hidden=!briefState;if(briefState){out.textContent=briefState.text;out.classList.toggle('err',!!briefState.err);}box.appendChild(out);
+  if(!aiReady){box.appendChild(el('p','muted',t('aiOff')));}
+  var pb=el('button','btn ghost',t('printBtn'));pb.type='button';pb.style.marginLeft='.6rem';pb.addEventListener('click',function(){printReport(r);});bb.insertAdjacentElement('afterend',pb);
+}
+function drawTable(s){var tb=$('table');tb.textContent='';var keys=['rank','district','score','likely','poverty_2024','poor_people','banked','not_formally_served','poverty_drop_pp','top5_robustness_pct','typology'];
+  var tr=el('tr');t('th').forEach(function(h){var th=el('th',null,h);th.scope='col';tr.appendChild(th);});var hd=el('thead');hd.appendChild(tr);tb.appendChild(hd);
+  var bd=el('tbody');s.forEach(function(r){var tr=el('tr');keys.forEach(function(k){var v=r[k];tr.appendChild(el('td',null,k==='likely'?likely(r):k==='score'?dec(v,1):k==='poor_people'?fmt(v):k==='typology'?t('typ')[v]:(typeof v==='number'&&k!=='rank'?dec(v):v)));});bd.appendChild(tr);});tb.appendChild(bd);}
+$('dl').addEventListener('click',function(){var s=compute(),head=['rank','district','province','score','poverty_2024','poor_people','banked','other_formal_only','informal_only','excluded','poverty_drop_pp','top5_robustness_pct','typology'];
+  var lines=[head.join(',')].concat(s.map(function(r){return head.map(function(h){var v=h==='score'?r.score.toFixed(1):r[h];return /,/.test(String(v))?'"'+v+'"':v;}).join(',');}));lines.push('');lines.push('weights,'+IND.map(function(i){return i.key+'='+W[i.key];}).join(';'));
+  var blob=new Blob([lines.join('\n')],{type:'text/csv'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ntawusigara_ranking.csv';document.body.appendChild(a);a.click();a.remove();});
+$('colorBy').addEventListener('change',function(e){colorBy=e.target.value;drawMap();});
+
+// ---------- AI (on-device model, see app/ai-local.js; no API, works offline) ----------
+var aiReady=!!window.NtwLocalAI,aiBusy=false,typer=null;
+function aiCtx(){return {rows:rows,S:S,T:T,lang:lang,W:W,IND:IND,ranges:RANGES};}
+function typeOut(out,text,done){var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce){out.textContent=text;done();return;}var i=0;$('stopBtn').hidden=false;
+  typer={finish:function(){clearInterval(typer.id);typer=null;out.textContent=text;done();}};
+  typer.id=setInterval(function(){i=Math.min(text.length,i+6);out.textContent=text.slice(0,i);if(i>=text.length)typer.finish();},16);}
+function setBusy(b){aiBusy=b;$('askBtn').disabled=!aiReady||b;$('askIn').disabled=!aiReady;$('stopBtn').hidden=!b;[].forEach.call(document.querySelectorAll('.chip'),function(c){c.disabled=!aiReady||b;});var bb=$('briefBtn');if(bb)bb.disabled=!aiReady||b;}
+function ask(q){q=(q||'').trim();if(!q||!aiReady||aiBusy)return;setBusy(true);
+  var th=$('thread'),qd=el('div','q',q),ad=el('div','ai-out',t('thinking'));th.insertBefore(ad,th.firstChild);th.insertBefore(qd,ad);
+  setTimeout(function(){var res;try{compute();res=NtwLocalAI.answer(q,aiCtx());}catch(e){ad.textContent=t('aiFail');ad.classList.add('err');setBusy(false);return;}
+    ad.lang=res.lang;typeOut(ad,res.text,function(){$('askIn').value='';setBusy(false);});},200);}
+function runBrief(d){if(!aiReady||aiBusy)return;setBusy(true);var out=$('briefOut');out.hidden=false;out.classList.remove('err');out.textContent=t('thinking');
+  setTimeout(function(){var text;try{compute();text=NtwLocalAI.brief(d,lang,aiCtx());}catch(e){out.textContent=t('aiFail');out.classList.add('err');briefState={text:out.textContent,err:true};setBusy(false);return;}
+    typeOut(out,text,function(){briefState={text:text};setBusy(false);});},200);}
+$('askForm').addEventListener('submit',function(e){e.preventDefault();ask($('askIn').value);});
+$('stopBtn').addEventListener('click',function(){if(typer)typer.finish();});
+function drawAI(){var c=$('chips');c.textContent='';t('qs').forEach(function(q){var b=el('button','chip',q);b.type='button';b.addEventListener('click',function(){$('askIn').value=q;ask(q);});c.appendChild(b);});
+  $('askIn').placeholder=t('ph');$('aiNote').textContent=aiReady?t('aiDisc'):t('aiOff');setBusy(aiBusy);}
+
+// ---------- Coverage allocator ----------
+var lastAlloc=null;
+function drawAlloc(){if(!window.NtwTools)return;var people=+$('alPeople').value||0,cost=+$('alCost').value||0,method=$('alMethod').value,n=+$('alN').value;
+  $('alNbox').hidden=method!=='top';$('alNl').textContent=t('alN',{n:n});
+  var o=$('alMethod').options;o[0].textContent=t('alTop');o[1].textContent=t('alAll');
+  var a=NtwTools.allocate(rows,{people:people,method:method,topN:n,cost:cost||null});lastAlloc=a;
+  $('alSum').textContent=t('alSum',{placed:fmt(a.placed),d:a.lines.length,cost:a.cost?t('alCostTxt',{c:fmt(a.cost)}):''})+(a.unplaced>0?' '+t('alUnplaced',{n:fmt(a.unplaced)}):'');
+  var tb=$('alTable');tb.textContent='';var th=t('alTh').slice(0,cost?5:4),tr=el('tr');th.forEach(function(x){var c=el('th',null,x);c.scope='col';tr.appendChild(c);});var hd=el('thead');hd.appendChild(tr);tb.appendChild(hd);
+  var bd=el('tbody');a.lines.forEach(function(l){var tr=el('tr');[l.district,l.rank,fmt(l.people),pc(Math.round(l.share*10)/10)].concat(cost?[fmt(l.people*cost)]:[]).forEach(function(v){tr.appendChild(el('td',null,v));});bd.appendChild(tr);});tb.appendChild(bd);}
+['alPeople','alCost','alMethod','alN'].forEach(function(id){$(id).addEventListener('input',drawAlloc);});
+$('alDl').addEventListener('click',function(){if(!lastAlloc)return;var lines=['district,priority_rank,people_reached,poor_people,share_of_poor_pct,cost_rwf'].concat(lastAlloc.lines.map(function(l){return [l.district,l.rank,l.people,l.poor,l.share.toFixed(1),$('alCost').value?l.people*(+$('alCost').value):''].join(',');}));
+  lines.push('');lines.push('method,'+$('alMethod').value+($('alMethod').value==='top'?' '+$('alN').value:''));lines.push('weights,'+IND.map(function(i){return i.key+'='+W[i.key];}).join(';'));download('ntawusigara_allocation.csv',lines.join('\n'));});
+function download(name,text){var blob=new Blob([text],{type:'text/csv'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();}
+
+// ---------- One-page printable report ----------
+function printReport(r){compute();computeRanges();var R=$('report');R.textContent='';var x=RANGES[r.district];
+  R.appendChild(el('h1',null,r.district));
+  R.appendChild(el('p','rp-sub',t('rpTitle')+' · '+t('prov')[r.province]+' · '+t('typ')[r.typology]+' · '+t('rankOf',{r:r.rank})+(x?' ('+t('likely',{lo:x.lo,hi:x.hi})+')':'')));
+  var k=el('div','rp-kpis');[[pc(r.poverty_2024),t('povH')+' 2024'],[fmt(r.poor_people),t('k2')],[pc(r.banked),t('s1')],[pc(r.top5_robustness_pct),t('k4')]].forEach(function(v){var d=el('div');d.appendChild(el('b',null,v[0]));d.appendChild(el('span',null,v[1]));k.appendChild(d);});R.appendChild(k);
+  R.appendChild(el('h2',null,t('finH')));var st=el('div','rp-strand');[['banked','#20232B'],['other_formal_only','#0E6E6E'],['informal_only','#D9A441'],['excluded','#A3402F']].forEach(function(p){var i=el('i');i.style.width=r[p[0]]+'%';i.style.background=p[1];st.appendChild(i);});R.appendChild(st);
+  R.appendChild(el('p',null,[['banked','s1'],['other_formal_only','s2'],['informal_only','s3'],['excluded','s4']].map(function(p){return t(p[1])+' '+pc(r[p[0]]);}).join(' · ')));
+  R.appendChild(el('h2',null,t('briefH')));R.appendChild(el('div','rp-body',window.NtwLocalAI?NtwLocalAI.brief(r.district,lang,aiCtx()):''));
+  R.appendChild(el('p','rp-foot',t('rpGen',{d:new Date().toLocaleDateString(loc())})+' '+t('optNote')));
+  window.print();}
+
+// ---------- Compare a new survey round ----------
+var lastCmp=null;
+function showCompare(newRows,demo){compute();var c=NtwTools.compareRounds(rows,newRows,W),box=$('cmpOut');box.textContent='';lastCmp={rows:newRows,demo:demo};
+  if(!c.matched){box.appendChild(el('div','note demo',t('cmpBad')));return;}
+  if(demo)box.appendChild(el('div','note demo',t('cmpDemoNote')));
+  var msg=[t('cmpSum',{m:c.matched})];msg.push(c.povFellSig.length?t('cmpFell',{l:c.povFellSig.join(', ')}):'');msg.push(c.povRoseSig.length?t('cmpRose',{l:c.povRoseSig.join(', ')}):'');
+  if(!c.povFellSig.length&&!c.povRoseSig.length)msg.push(t('cmpNone'));if(c.bankRoseSig.length)msg.push(t('cmpBank',{l:c.bankRoseSig.join(', ')}));
+  if(c.enteredTop5.length)msg.push(t('cmpIn',{l:c.enteredTop5.join(', ')}));if(c.leftTop5.length)msg.push(t('cmpOut',{l:c.leftTop5.join(', ')}));if(c.unknown.length)msg.push(t('cmpUnknown',{l:c.unknown.join(', ')}));
+  box.appendChild(el('div','note',msg.filter(Boolean).join(' ')));
+  var tb=el('table'),tr=el('tr');t('cmpTh').forEach(function(x){var th=el('th',null,x);th.scope='col';tr.appendChild(th);});var hd=el('thead');hd.appendChild(tr);tb.appendChild(hd);var bd=el('tbody');
+  c.lines.filter(function(l){return l.inNew;}).sort(function(a,b){return a.newRank-b.newRank;}).forEach(function(l){var tr=el('tr');
+    var cell=function(v,cls){var td=el('td',cls||null,v);tr.appendChild(td);};var sgn=function(d){return (d>0?'+':'')+dec(d);};
+    cell(l.district);cell(pc(l.povNew));cell(sgn(l.povDelta)+(l.povSig?' *':''),l.povSig?(l.povDelta<0?'up':'down'):'');cell(pc(l.bankNew));cell(sgn(l.bankDelta)+(l.bankSig?' *':''),l.bankSig?(l.bankDelta>0?'up':'down'):'');
+    cell(String(l.oldRank));var mv=l.oldRank-l.newRank;cell(l.newRank+(mv?' ('+(mv>0?'↑':'↓')+Math.abs(mv)+')':''));bd.appendChild(tr);});
+  tb.appendChild(bd);var sc=el('div','scroll');sc.appendChild(tb);box.appendChild(sc);box.appendChild(el('p','muted',t('cmpStar')));}
+$('cmpTpl').addEventListener('click',function(){download('ntawusigara_new_round_template.csv',NtwTools.templateCSV(rows));});
+$('cmpDemo').addEventListener('click',function(){showCompare(NtwTools.demoRound(rows,Math.floor(Math.random()*1e6)),true);});
+$('cmpFile').addEventListener('change',function(e){var f=e.target.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){showCompare(NtwTools.parseCSV(rd.result),false);};rd.readAsText(f);e.target.value='';});
+
+// ---------- Language ----------
+function applyLang(){document.documentElement.lang=lang;document.title='Ntawusigara · '+t('mapH');
+  document.querySelectorAll('[data-i]').forEach(function(n){n.textContent=t(n.getAttribute('data-i'));});
+  document.querySelectorAll('[data-lang]').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.lang===lang?'true':'false');});
+  svg.setAttribute('aria-label',t('mapAria'));
+  var cb=$('colorBy');cb.textContent='';COLOR_KEYS.forEach(function(k){var o=el('option',null,t('cb')[k]);o.value=k;cb.appendChild(o);});cb.value=colorBy;
+  var st=$('stats');st.textContent='';[[fmt(S.estimated_poor_people),t('st1')],[pc(27.4),t('st2')],[pc(92),t('st3')],[S.robust_top5.length,t('st4')]].forEach(function(s){var d=el('div','stat');d.appendChild(el('b',null,s[0]));d.appendChild(el('span',null,s[1]));st.appendChild(d);});
+  update();drawAI();if(lastCmp)showCompare(lastCmp.rows,lastCmp.demo);}
+function update(){drawWeights();var s=compute();computeRanges();drawRank(s);drawAlloc();drawMap();drawTable(s);drawDetail();$('robustNote').textContent=t('robust')+S.robust_top5.join(', ')+'.';}
+document.querySelectorAll('[data-lang]').forEach(function(b){b.addEventListener('click',function(){lang=b.dataset.lang;try{localStorage.setItem('ntw-lang',lang);}catch(e){}applyLang();});});
+try{var sv=localStorage.getItem('ntw-lang');if(sv&&T[sv])lang=sv;else{var nl=(navigator.language||'').slice(0,2);if(T[nl])lang=nl;}}catch(e){}
+applyLang();
+})();
+</script>
+</body>
+</html>

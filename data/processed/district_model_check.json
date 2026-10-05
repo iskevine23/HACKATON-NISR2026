@@ -1,0 +1,15 @@
+{
+  "baseline_mean_mae": 11.1,
+  "ridge": {
+    "loo_r2": -0.048,
+    "loo_mae": 10.91
+  },
+  "random_forest": {
+    "loo_r2": -0.019,
+    "loo_mae": 10.36
+  },
+  "gradient_boosting": {
+    "loo_r2": 0.247,
+    "loo_mae": 7.8
+  }
+}
